@@ -84,6 +84,44 @@ let quotes = [
             quotes = JSON.parse(storedQuotes);
         }
         }
+
+document.getElementById("exportQuotes").addEventListener("click", function () {
+  const jsonData = JSON.stringify(quotes, null, 2); // Pretty-printed
+  const blob = new Blob([jsonData], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "quotes.json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+
+document.getElementById("importQuotes").addEventListener("change", function (event) {
+    const file = event.target.files[0];
+    if (!file) return;
+  
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      try {
+        const importedQuotes = JSON.parse(e.target.result);
+        if (Array.isArray(importedQuotes)) {
+          quotes = quotes.concat(importedQuotes.filter(q => q.text && q.category));
+          alert("Quotes imported successfully!");
+          showRandomQuote();
+        } else {
+          alert("Invalid file format. Expected an array of quotes.");
+        }
+      } catch (err) {
+        alert("Error reading JSON file: " + err.message);
+      }
+    };
+    reader.readAsText(file);
+  });
+  
     
   
   
