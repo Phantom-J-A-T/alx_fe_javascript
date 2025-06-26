@@ -73,9 +73,17 @@ let quotes = [
         alert("Quote added successfully!");
         showRandomQuote();
         form.reset();
+        localStorage.setItem("quotes", JSON.stringify(quotes)); // Save to local storage
       }
     });
   }
+    // Function to load quotes from local storage
+    function loadQuotesFromLocalStorage() {
+        const storedQuotes = localStorage.getItem("quotes");
+        if (storedQuotes) {
+            quotes = JSON.parse(storedQuotes);
+        }
+        }
     
   
   
