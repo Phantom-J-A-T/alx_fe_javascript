@@ -241,13 +241,13 @@ document.getElementById("importQuotes").addEventListener("change", function (eve
   
     document.getElementById("mergeData").onclick = () => {
       // Merge without duplicates
-      const allQuotes = [...quotes];
+      const syncQuotes = [...quotes];
       serverQuotes.forEach(sq => {
         if (!quotes.find(lq => lq.text === sq.text && lq.category === sq.category)) {
-          allQuotes.push(sq);
+          syncQuotes.push(sq);
         }
       });
-      quotes = allQuotes;
+      quotes = syncQuotes;
       localStorage.setItem("quotes", JSON.stringify(quotes));
       populateCategories();
       showRandomQuote();
