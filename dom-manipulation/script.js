@@ -72,12 +72,15 @@ let quotes = [
       const newCategory = inputCategory.value.trim();
   
       if (newText && newCategory) {
-        quotes.push({ text: newText, category: newCategory });
+        const newQuote = { text: newText, category: newCategory };
+        quotes.push(newQuote);  
+        postQuoteToServer(newQuote);
         alert("Quote added successfully!");
         showRandomQuote();
         form.reset();
         localStorage.setItem("quotes", JSON.stringify(quotes)); // Save to local storage
       }
+      
     });
   }
     // Function to load quotes from local storage
@@ -87,6 +90,39 @@ let quotes = [
             quotes = JSON.parse(storedQuotes);
         }
         }
+        // Posting of Quotes to Servers
+    function postQuoteToServer(quote) {
+      fetch("https://jsonplaceholder.typicode.com/posts", {
+      method: "POST",
+      headers: {
+      "Content-Type": "application/json"
+      },
+      body: JSON.stringify(quote)
+      })
+    .then(response => response.json())
+    .then(data => console.log("Quote posted to server:", data))
+    .catch(error => console.error("Error posting quote:", error));
+
+    // Simulate fetching quotes from a server
+    function fetchQuotesFromServer() {
+    fetch("https://jsonplaceholder.typicode.com/posts?_limit=5") // mock GET
+    .then(response => response.json())
+    .then(data => {
+      const fetchedQuotes = data.map(post => ({
+        text: post.title,
+        category: "Server Data"
+      }));
+
+      quotes = quotes.concat(fetchedQuotes);
+      populateCategories();
+      showRandomQuote();
+      console.log("Quotes updated from server.");
+    })
+    .catch(error => console.error("Failed to fetch quotes:", error));
+}
+
+}
+
 
 document.getElementById("exportQuotes").addEventListener("click", function () {
   const jsonData = JSON.stringify(quotes, null, 2); // Pretty-printed
@@ -179,8 +215,15 @@ document.getElementById("importQuotes").addEventListener("change", function (eve
     localStorage.setItem("selectedCategory", selectedCategory);
     filterQuotes(selectedCategory);
   });
+
+  
+
   
   populateCategories();
+
+  // Fetch server quotes every 30 seconds
+  setInterval(fetchQuotesFromServer, 30000);
+
   
   // Optionally run these on load
   window.onload = function () {
@@ -192,4 +235,7 @@ document.getElementById("importQuotes").addEventListener("change", function (eve
     createAddQuoteForm();
   
     document.getElementById("newQuote").addEventListener("click", showRandomQuote);
+
+    fetchQuotesFromServer(); // initial fetch
+    setInterval(fetchQuotesFromServer, 30000); // repeat every 30 seconds
   };
