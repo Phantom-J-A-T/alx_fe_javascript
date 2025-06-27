@@ -21,9 +21,6 @@ let quotes = [
   
     container.appendChild(blockquote);
     container.appendChild(category);
-
-    const currentFilter = document.getElementById("categoryFilter").value || "all";
-    filterQuotes(currentFilter);
   }
   
 
@@ -82,7 +79,7 @@ let quotes = [
       }
       
     });
-  }
+  };
     // Function to load quotes from local storage
     function loadQuotesFromLocalStorage() {
         const storedQuotes = localStorage.getItem("quotes");
@@ -102,32 +99,31 @@ let quotes = [
     .then(response => response.json())
     .then(data => console.log("Quote posted to server:", data))
     .catch(error => console.error("Error posting quote:", error));
-
-    // Simulate fetching quotes from a server
-    async function fetchQuotesFromServer() {
-      await fetch("https://jsonplaceholder.typicode.com/posts?_limit=5")
-        .then(response => response.json())
-        .then(serverData => {
-          const serverQuotes = serverData.map(post => ({
-            text: post.title,
-            category: "Server Data"
-          }));
-    
-          // Basic conflict check: different number of quotes or differing text
-          const conflict = JSON.stringify(serverQuotes) !== JSON.stringify(quotes.slice(-serverQuotes.length));
-    
-          if (conflict) {
-            showConflictNotification(serverQuotes);
-          } else {
-            console.log("No conflict — server quotes match local quotes.");
-          }
-        })
-        .catch(err => console.error("Error fetching server quotes:", err));
-    }
-    
+  
 
 }
 
+
+async function fetchQuotesFromServer() {
+  await fetch("https://jsonplaceholder.typicode.com/posts?_limit=5")
+    .then(response => response.json())
+    .then(serverData => {
+      const serverQuotes = serverData.map(post => ({
+        text: post.title,
+        category: "Server Data"
+      }));
+
+      // Basic conflict check: different number of quotes or differing text
+      const conflict = JSON.stringify(serverQuotes) !== JSON.stringify(quotes.slice(-serverQuotes.length));
+
+      if (conflict) {
+        showConflictNotification(serverQuotes);
+      } else {
+        console.log("No conflict — server quotes match local quotes.");
+      }
+    })
+    .catch(err => console.error("Error fetching server quotes:", err));
+}
 
 document.getElementById("exportQuotes").addEventListener("click", function () {
   const jsonData = JSON.stringify(quotes, null, 2); // Pretty-printed
@@ -262,9 +258,7 @@ document.getElementById("importQuotes").addEventListener("change", function (eve
 
   
   populateCategories();
-
-  // Fetch server quotes every 30 seconds
-  setInterval(fetchQuotesFromServer, 30000);
+  localStorage.setItem("quotes", JSON.stringify(quotes));
 
   
   // Optionally run these on load
