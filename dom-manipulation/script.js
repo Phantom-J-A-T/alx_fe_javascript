@@ -104,22 +104,27 @@ let quotes = [
     .catch(error => console.error("Error posting quote:", error));
 
     // Simulate fetching quotes from a server
-    function fetchQuotesFromServer() {
-    fetch("https://jsonplaceholder.typicode.com/posts?_limit=5") // mock GET
-    .then(response => response.json())
-    .then(data => {
-      const fetchedQuotes = data.map(post => ({
-        text: post.title,
-        category: "Server Data"
-      }));
-
-      quotes = quotes.concat(fetchedQuotes);
-      populateCategories();
-      showRandomQuote();
-      console.log("Quotes updated from server.");
-    })
-    .catch(error => console.error("Failed to fetch quotes:", error));
-}
+    async function fetchQuotesFromServer() {
+      await fetch("https://jsonplaceholder.typicode.com/posts?_limit=5")
+        .then(response => response.json())
+        .then(serverData => {
+          const serverQuotes = serverData.map(post => ({
+            text: post.title,
+            category: "Server Data"
+          }));
+    
+          // Basic conflict check: different number of quotes or differing text
+          const conflict = JSON.stringify(serverQuotes) !== JSON.stringify(quotes.slice(-serverQuotes.length));
+    
+          if (conflict) {
+            showConflictNotification(serverQuotes);
+          } else {
+            console.log("No conflict — server quotes match local quotes.");
+          }
+        })
+        .catch(err => console.error("Error fetching server quotes:", err));
+    }
+    
 
 }
 
@@ -215,6 +220,42 @@ document.getElementById("importQuotes").addEventListener("change", function (eve
     localStorage.setItem("selectedCategory", selectedCategory);
     filterQuotes(selectedCategory);
   });
+
+  function showConflictNotification(serverQuotes) {
+    const notification = document.getElementById("conflictNotification");
+    notification.style.display = "block";
+  
+    document.getElementById("keepLocal").onclick = () => {
+      notification.style.display = "none";
+      alert("Your local data is kept.");
+    };
+  
+    document.getElementById("acceptServer").onclick = () => {
+      quotes = serverQuotes;
+      localStorage.setItem("quotes", JSON.stringify(quotes));
+      populateCategories();
+      showRandomQuote();
+      notification.style.display = "none";
+      alert("Server data has replaced local quotes.");
+    };
+  
+    document.getElementById("mergeData").onclick = () => {
+      // Merge without duplicates
+      const allQuotes = [...quotes];
+      serverQuotes.forEach(sq => {
+        if (!quotes.find(lq => lq.text === sq.text && lq.category === sq.category)) {
+          allQuotes.push(sq);
+        }
+      });
+      quotes = allQuotes;
+      localStorage.setItem("quotes", JSON.stringify(quotes));
+      populateCategories();
+      showRandomQuote();
+      notification.style.display = "none";
+      alert("Local and server quotes have been merged.");
+    };
+  }
+  
 
   
 
