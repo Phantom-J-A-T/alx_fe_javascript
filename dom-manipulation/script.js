@@ -245,6 +245,7 @@ document.getElementById("importQuotes").addEventListener("change", function (eve
       serverQuotes.forEach(sq => {
         if (!quotes.find(lq => lq.text === sq.text && lq.category === sq.category)) {
           syncQuotes.push(sq);
+          alert("Quotes synced with server!");
         }
       });
       quotes = syncQuotes;
